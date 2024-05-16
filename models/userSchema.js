@@ -1,5 +1,6 @@
 import mongoose from "mongoose";
 import bcrypt from "bcryptjs";
+import crypto from "crypto";
 
 const userSchema = new mongoose.Schema(
   {
@@ -34,6 +35,13 @@ userSchema.pre("save", async function (next) {
 
 userSchema.methods.comparePassword = async function (password) {
   return await bcrypt.compare(password, this.password);
+};
+
+userSchema.methods.generateOTP = function () {
+  const otp = crypto.randomBytes(3).toString("hex").toUpperCase();
+  this.otp = otp;
+  this.otpExpires = Date.now() + 10 * 60 * 1000; // OTP valid for 10 minutes
+  return otp;
 };
 
 export const Users = mongoose.model("Users", userSchema);
