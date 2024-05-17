@@ -4,7 +4,7 @@ import {
   loginValidation,
 } from "../validation/doctorValidation.js";
 import jwt from "jsonwebtoken";
-import { sendOTPEmail } from "../config/nodemailer.js";
+// import { sendOTPEmail } from "../config/nodemailer.js";
 
 export const signup = async (req, res, next) => {
   const { error } = signupValidation(req.body);
@@ -18,10 +18,7 @@ export const signup = async (req, res, next) => {
       return res.status(400).json({ message: "User already exists." });
 
     const users = new Users({ name, email, password });
-    const otp = users.generateOTP();
     await users.save();
-
-    await sendOTPEmail(email, otp);
 
     res.status(201).json({ message: "User registered ", users });
   } catch (err) {
@@ -51,31 +48,6 @@ export const login = async (req, res, next) => {
     });
 
     res.json({ token });
-  } catch (err) {
-    res.status(500).json({ message: err.message });
-  }
-};
-
-export const verifyOTP = async (req, res, next) => {
-  const { email, otp } = req.body;
-
-  try {
-    const user = await Users.findOne({ email });
-
-    if (!user) {
-      return res.status(400).json({ message: "Invalid email or OTP" });
-    }
-
-    if (user.otp !== otp || user.otpExpires < Date.now()) {
-      return res.status(400).json({ message: "Invalid or expired OTP" });
-    }
-
-    user.isVerified = true;
-    user.otp = undefined;
-    user.otpExpires = undefined;
-    await user.save();
-
-    res.status(200).json({ message: "Email verified successfully" });
   } catch (err) {
     res.status(500).json({ message: err.message });
   }
