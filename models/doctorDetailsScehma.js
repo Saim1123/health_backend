@@ -10,7 +10,7 @@ const doctorDetailsSchema = new mongoose.Schema({
   city: { type: String, required: true },
   cnic_number: { type: Number, required: true, maxLength: 13 },
   gender: { type: String, enum: ["male", "female", "other"], required: true },
-  //   pmcCertificate: { type: string, required: true, maxLength: 13 },
+  pmcCertificate: { type: string, required: true },
 });
 
 export const DoctorDetails = mongoose.model(

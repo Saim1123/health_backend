@@ -10,6 +10,7 @@ export const doctorDetails = async (req, res, next) => {
     city,
     cnic_number,
     gender,
+    pmcCertificate,
   } = req.body;
 
   try {
@@ -22,6 +23,7 @@ export const doctorDetails = async (req, res, next) => {
       city,
       cnic_number,
       gender,
+      pmcCertificate: req.file.path,
     });
 
     await doctorDetails.save();
