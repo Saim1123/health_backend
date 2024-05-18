@@ -4,4 +4,4 @@ import { fileUpload } from "../middlewares/file-upload.js";
 
 export const router = express.Router();
 
-router.post("/details", fileUpload.single("image"), doctorDetails);
+router.post("/details", fileUpload.single("pmcCertificate"), doctorDetails);
