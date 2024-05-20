@@ -14,6 +14,10 @@ connectDB();
 app.use("/api/v1", userRoutes);
 app.use("/api/v1", doctorDetailsRoute);
 
+app.get("/", (req, res) => {
+  res.send("working...");
+});
+
 app.use((req, res, next) => {
   const error = new HttpError("This route is not found", 404);
 });

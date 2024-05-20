@@ -1,5 +1,4 @@
 import mongoose from "mongoose";
-// import { captureRejectionSymbol } from "nodemailer/lib/xoauth2";
 
 const doctorDetailsSchema = new mongoose.Schema({
   first_name: { type: String, required: true },
