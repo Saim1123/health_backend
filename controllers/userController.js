@@ -37,7 +37,6 @@ export const signup = async (req, res, next) => {
 
     console.log("Saving OTP");
     await Otp.create({ email, otp });
-    await Otp.save();
 
     const transporter = nodemailer.createTransport({
       host: "smtp.zoho.com",
@@ -57,10 +56,10 @@ export const signup = async (req, res, next) => {
       text: `Your OTP for verification is: ${otp}`,
     });
 
-    res.status(201).json({ message: "User registered ", users });
+    res.status(201).json("otp sent.");
   } catch (err) {
     console.log(err);
-    return next(new HttpError("Signning up failed, try again", 500));
+    return next(new HttpError("Signing up failed, try again", 500));
   }
 };
 
@@ -71,13 +70,16 @@ export const verifyOTP = async (req, res, next) => {
   const { email, otp } = req.body;
   try {
     const otpRecord = await Otp.findOne({ email, otp }).exec();
-    const user = await Users.findOne({ email });
-
     if (!otpRecord) {
-      res.status(400).send("Invalid OTP");
+      return res.status(400).send("Invalid OTP");
+    }
+    const user = await Users.findOne({ email });
+    if (!user) {
+      return res.status(400).send("User not found");
     }
 
     user.isVerified = true;
+    await user.save();
     res.status(200).send("OTP verified successfully");
   } catch (err) {
     console.error(err.message);
@@ -112,4 +114,12 @@ export const login = async (req, res, next) => {
     // res.status(500).json({ message: err.message });
     return next(new HttpError("Loggig up failed , try gain ", 500));
   }
+};
+
+export const deleteUsers = async (req, res, next) => {
+  await Users.deleteMany({})
+    .then(() => {
+      res.send("All users deleted");
+    })
+    .catch((err) => console.error("Error deleting users:", err));
 };
