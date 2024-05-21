@@ -2,11 +2,11 @@ import { DoctorDetails } from "../models/doctorDetailsScehma.js";
 
 export const doctorDetails = async (req, res, next) => {
   const {
+    doctor_id,
     first_name,
     last_name,
     education,
     speciality,
-    phone_number,
     city,
     cnic_number,
     gender,
@@ -15,11 +15,11 @@ export const doctorDetails = async (req, res, next) => {
 
   try {
     const doctorDetails = new DoctorDetails({
+      doctor_id,
       first_name,
       last_name,
       education,
       speciality,
-      phone_number,
       city,
       cnic_number,
       gender,
