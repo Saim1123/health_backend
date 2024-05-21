@@ -11,6 +11,16 @@ app.use(express.json());
 
 connectDB();
 
+app.use(
+  cors({
+    origin: ["http://localhost:5000", "*"],
+    methods: ["GET", "POST", "PUT", "DELETE"],
+    allowedHeaders: ["Content-Type", "Authorization"],
+    // replace with frontend origin
+    credentials: true, // allow credentials (cookies, authorization headers )
+  })
+);
+
 app.use("/api/v1", userRoutes);
 app.use("/api/v1", doctorDetailsRoute);
 
