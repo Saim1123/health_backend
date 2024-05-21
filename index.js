@@ -4,6 +4,7 @@ import connectDB from "./config/db.js";
 import { router as userRoutes } from "./routes/userRoutes.js";
 import { router as doctorDetailsRoute } from "./routes/doctorDetailsRoute.js";
 import HttpError from "./models/Http-error.js";
+import cors from "cors";
 
 const app = express();
 
