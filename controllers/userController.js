@@ -1,3 +1,6 @@
+import jwt from "jsonwebtoken";
+import otpGenerator from "otp-generator";
+import nodemailer from "nodemailer";
 import HttpError from "../models/Http-error.js";
 import { Otp, otpValidation } from "../models/otpSchema.js";
 import { Users } from "../models/userSchema.js";
@@ -5,9 +8,7 @@ import {
   signupValidation,
   loginValidation,
 } from "../validation/doctorValidation.js";
-import jwt from "jsonwebtoken";
-import otpGenerator from "otp-generator";
-import nodemailer from "nodemailer";
+import { emailMessage } from "../html/emailMessage.js";
 
 console.log(process.env.EMAIL_USER);
 
@@ -18,7 +19,7 @@ export const signup = async (req, res, next) => {
 
   console.log(error);
 
-  const { name, email, password } = req.body;
+  const { name, email, password, role } = req.body;
   const otp = otpGenerator.generate(5, {
     digits: true,
     upperCaseAlphabets: false,
@@ -32,8 +33,8 @@ export const signup = async (req, res, next) => {
     }
 
     console.log("Creating new user");
-    const users = new Users({ name, email, password });
-    await users.save();
+    const user = new Users({ name, email, password, role });
+    await user.save();
 
     console.log("Saving OTP");
     await Otp.create({ email, otp });
@@ -53,7 +54,7 @@ export const signup = async (req, res, next) => {
       from: process.env.EMAIL_USER,
       to: email,
       subject: "OTP Verification",
-      text: `Your OTP for verification is: ${otp}`,
+      html: emailMessage(user.name, otp),
     });
 
     res.status(201).json("otp sent.");
