@@ -19,7 +19,7 @@ export const signup = async (req, res, next) => {
 
   console.log(error);
 
-  const { name, email, password, role } = req.body;
+  const { name, email, password, phone_number, role } = req.body;
   const otp = otpGenerator.generate(5, {
     digits: true,
     upperCaseAlphabets: false,
@@ -33,7 +33,7 @@ export const signup = async (req, res, next) => {
     }
 
     console.log("Creating new user");
-    const user = new Users({ name, email, password, role });
+    const user = new Users({ name, email, password, phone_number, role });
     await user.save();
 
     console.log("Saving OTP");
