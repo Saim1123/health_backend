@@ -1,4 +1,5 @@
 import { DoctorDetails } from "../models/doctorDetailsScehma.js";
+import { Users } from "../models/userSchema.js";
 
 export const doctorDetails = async (req, res, next) => {
   const {
@@ -11,9 +12,13 @@ export const doctorDetails = async (req, res, next) => {
     cnic_number,
     gender,
   } = req.body;
-  const pmcCertificate = req.file.path;
 
   try {
+    const pmcCertificate = req.file.path;
+
+    const user = await Users.findById(doctor_id);
+    if (!user) res.status(400).send("user not found");
+
     const doctorDetails = new DoctorDetails({
       doctor_id,
       first_name,
