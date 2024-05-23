@@ -1,6 +1,5 @@
 import jwt from "jsonwebtoken";
 import otpGenerator from "otp-generator";
-import nodemailer from "nodemailer";
 import HttpError from "../models/Http-error.js";
 import { Otp, otpValidation } from "../models/otpSchema.js";
 import { Users } from "../models/userSchema.js";
@@ -8,16 +7,14 @@ import {
   signupValidation,
   loginValidation,
 } from "../validation/doctorValidation.js";
-import { emailMessage } from "../html/emailMessage.js";
-
-console.log(process.env.EMAIL_USER);
+import { sendOtpEmail } from "../config/nodemailer.js";
 
 export const signup = async (req, res, next) => {
   const { error } = signupValidation(req.body);
 
   if (error) return res.status(400).json({ message: error.details[0].message });
 
-  console.log(error);
+  console.log("error>>", error);
 
   const { name, email, password, phone_number, role } = req.body;
   const otp = otpGenerator.generate(5, {
@@ -32,34 +29,20 @@ export const signup = async (req, res, next) => {
       return next(new HttpError(" User already exist", 400));
     }
 
-    console.log("Creating new user");
+    console.log("Creating new user>>");
     const user = new Users({ name, email, password, phone_number, role });
     await user.save();
 
-    console.log("Saving OTP");
+    console.log("Saving OTP>>");
     await Otp.create({ email, otp });
 
-    const transporter = nodemailer.createTransport({
-      host: "smtp.zoho.com",
-      port: 465, // Use port 465 for secure connection
-      secure: true, // Use true for 465, false for other ports
-      auth: {
-        user: process.env.EMAIL_USER,
-        pass: process.env.EMAIL_PASS,
-      },
-    });
+    console.log("Sending OTP email>>");
+    await sendOtpEmail(email, user.name, otp);
 
-    console.log("Sending OTP email");
-    await transporter.sendMail({
-      from: process.env.EMAIL_USER,
-      to: email,
-      subject: "OTP Verification",
-      html: emailMessage(user.name, otp),
-    });
-
+    console.log("otp send");
     res.status(201).json("otp sent.");
   } catch (err) {
-    console.log(err);
+    console.log("err>>", err);
     return next(new HttpError("Signing up failed, try again", 500));
   }
 };
@@ -70,7 +53,7 @@ export const verifyOTP = async (req, res, next) => {
 
   const { email, otp } = req.body;
   try {
-    const otpRecord = await Otp.findOne({ email, otp }).exec();
+    const otpRecord = await Otp.findOne({ email, otp });
     if (!otpRecord) {
       return res.status(400).send("Invalid OTP");
     }
@@ -83,7 +66,7 @@ export const verifyOTP = async (req, res, next) => {
     await user.save();
     res.status(200).send("OTP verified successfully");
   } catch (err) {
-    console.error(err.message);
+    console.error(">>err", err.message);
     res.status(500).send("Error verifying OTP");
   }
 };
@@ -123,4 +106,10 @@ export const deleteUsers = async (req, res, next) => {
       res.send("All users deleted");
     })
     .catch((err) => console.error("Error deleting users:", err));
+};
+
+export const getDoctors = async (req, res, next) => {
+  const users = await Users.find({ role: "doctor" });
+  if (!users) res.status(400).send("doctors not found!");
+  res.status(200).send(users);
 };
