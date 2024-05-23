@@ -3,7 +3,7 @@ import { Users } from "../models/userSchema.js";
 
 export const doctorDetails = async (req, res, next) => {
   const {
-    doctor_id,
+    // doctor_id,
     first_name,
     last_name,
     education,
@@ -14,13 +14,14 @@ export const doctorDetails = async (req, res, next) => {
   } = req.body;
 
   try {
-    const pmcCertificate = req.file.path;
+    const pmcCertificate = req.files.pmcCertificate;
+    console.log(req.files.pmcCertificate);
 
-    const user = await Users.findById(doctor_id);
-    if (!user) res.status(400).send("user not found");
+    // const user = await Users.findById(doctor_id);
+    // if (!user) res.status(400).send("user not found");
 
     const doctorDetails = new DoctorDetails({
-      doctor_id,
+      // doctor_id,
       first_name,
       last_name,
       education,

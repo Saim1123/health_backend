@@ -1,11 +1,11 @@
 import mongoose from "mongoose";
 
 const doctorDetailsSchema = new mongoose.Schema({
-  doctor_id: {
-    type: mongoose.Schema.Types.ObjectId,
-    ref: "Users",
-    required: true,
-  },
+  // doctor_id: {
+  //   type: mongoose.Schema.Types.ObjectId,
+  //   ref: "Users",
+  //   required: true,
+  // },
   first_name: { type: String, required: true },
   last_name: { type: String, required: true },
   education: { type: String, required: true },
