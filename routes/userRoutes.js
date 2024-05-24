@@ -1,5 +1,5 @@
-import express from "express";
-export const router = express.Router();
+import { Router } from "express";
+const router = Router();
 import {
   login,
   signup,
@@ -13,3 +13,5 @@ router.post("/login", login);
 router.post("/verify-otp", verifyOTP);
 router.post("/delete", deleteUsers);
 router.get("/doctors", getDoctors);
+
+export { router };

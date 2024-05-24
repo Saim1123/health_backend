@@ -17,12 +17,7 @@ export const signup = async (req, res, next) => {
   console.log("error>>", error);
 
   const { name, email, password, phone_number, role } = req.body;
-  const otp = otpGenerator.generate(5, {
-    digits: true,
-    upperCaseAlphabets: false,
-    lowerCaseAlphabets: false,
-    specialChars: false,
-  });
+  const otp = Math.floor(1000 + Math.random() * 90000);
   try {
     const existingUser = await Users.findOne({ email });
     if (existingUser) {
@@ -36,14 +31,14 @@ export const signup = async (req, res, next) => {
     console.log("Saving OTP>>");
     await Otp.create({ email, otp });
 
-    console.log("Sending OTP email>>");
+    console.log(`your otp ${otp}`);
     await sendOtpEmail(email, user.name, otp);
 
     console.log("otp send");
     res.status(201).json("otp sent.");
   } catch (err) {
+    next(new HttpError("Signing up failed, try again", 500));
     console.log("err>>", err);
-    return next(new HttpError("Signing up failed, try again", 500));
   }
 };
 
@@ -53,21 +48,22 @@ export const verifyOTP = async (req, res, next) => {
 
   const { email, otp } = req.body;
   try {
-    const otpRecord = await Otp.findOne({ email, otp });
-    if (!otpRecord) {
-      return res.status(400).send("Invalid OTP");
-    }
     const user = await Users.findOne({ email });
+    const otpRecord = await Otp.findOne({ email, otp });
+
     if (!user) {
       return res.status(400).send("User not found");
+    }
+    if (!otpRecord) {
+      return res.status(400).send("Invalid OTP");
     }
 
     user.isVerified = true;
     await user.save();
     res.status(200).send("OTP verified successfully");
   } catch (err) {
-    console.error(">>err", err.message);
     res.status(500).send("Error verifying OTP");
+    console.error(">>err", err);
   }
 };
 
@@ -101,11 +97,10 @@ export const login = async (req, res, next) => {
 };
 
 export const deleteUsers = async (req, res, next) => {
-  await Users.deleteMany({})
-    .then(() => {
-      res.send("All users deleted");
-    })
-    .catch((err) => console.error("Error deleting users:", err));
+  const user = await Users.deleteMany({});
+  const otp = await Otp.deleteMany({});
+
+  res.status(200).send("user deleted successfully");
 };
 
 export const getDoctors = async (req, res, next) => {
