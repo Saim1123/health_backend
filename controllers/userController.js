@@ -76,7 +76,6 @@ export const login = async (req, res, next) => {
   try {
     const users = await Users.findOne({ email });
     if (!users) {
-      // return res.status(400).json({ message: "Invalid email or password" });
       return next(new HttpError("Invalid email or password", 400));
     }
 

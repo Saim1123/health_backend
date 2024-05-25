@@ -1,9 +1,10 @@
 import { DoctorDetails } from "../models/doctorDetailsScehma.js";
 import { Users } from "../models/userSchema.js";
+import { uploadOnCloudinary } from "../config/cloudinaryConfig.js";
 
 export const doctorDetails = async (req, res, next) => {
+  console.log("working...");
   const {
-    // doctor_id,
     first_name,
     last_name,
     education,
@@ -14,14 +15,20 @@ export const doctorDetails = async (req, res, next) => {
   } = req.body;
 
   try {
-    const pmcCertificate = req.files.pmcCertificate;
-    console.log(req.files.pmcCertificate);
+    const pmcCertificatePath = req.file?.path;
+    console.log("pmc file path", pmcCertificatePath);
 
-    // const user = await Users.findById(doctor_id);
-    // if (!user) res.status(400).send("user not found");
+    if (!pmcCertificatePath) {
+      return res.status(400).send("pmcCertificate is required");
+    }
 
-    const doctorDetails = new DoctorDetails({
-      // doctor_id,
+    const pmcCertificate = await uploadOnCloudinary(pmcCertificatePath);
+    console.log("upload on cloudinary", pmcCertificate);
+
+    if (!pmcCertificate)
+      return res.status(400).send("pmcCertificate is required");
+
+    const docotorDetail = await DoctorDetails.create({
       first_name,
       last_name,
       education,
@@ -29,11 +36,13 @@ export const doctorDetails = async (req, res, next) => {
       city,
       cnic_number,
       gender,
-      pmcCertificate,
+      pmcCertificate: pmcCertificate.url,
     });
+    console.log("doctor created.");
 
-    await doctorDetails.save();
-    res.status(201).json({ message: "doctor registered", doctorDetails });
+    if (!docotorDetail) return res.status(400).send("something went wrong");
+
+    res.status(201).send("ok");
   } catch (err) {
     res.status(500).json({ message: err.message });
   }
