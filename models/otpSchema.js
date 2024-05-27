@@ -4,7 +4,7 @@ import Joi from "joi";
 const otpSchema = new mongoose.Schema({
   email: { type: String, required: true },
   otp: { type: String, required: true, minLength: 5 },
-  createdAt: { type: Date, expires: "5m", default: Date.now() },
+  createdAt: { type: Date, expires: "10m", default: Date.now() },
 });
 
 export const Otp = mongoose.model("Otp", otpSchema);

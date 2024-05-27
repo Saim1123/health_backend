@@ -1,5 +1,5 @@
 import jwt from "jsonwebtoken";
-import otpGenerator from "otp-generator";
+import mongoose from "mongoose";
 import HttpError from "../models/Http-error.js";
 import { Otp, otpValidation } from "../models/otpSchema.js";
 import { Users } from "../models/userSchema.js";
@@ -11,32 +11,42 @@ import { sendOtpEmail } from "../config/nodemailer.js";
 
 export const signup = async (req, res, next) => {
   const { error } = signupValidation(req.body);
-
   if (error) return res.status(400).json({ message: error.details[0].message });
 
-  console.log("error>>", error);
+  const session = await mongoose.startSession();
+  session.startTransaction();
 
-  const { name, email, password, phone_number, role } = req.body;
-  const otp = Math.floor(1000 + Math.random() * 90000);
   try {
-    const existingUser = await Users.findOne({ email });
+    console.log("error>>", error);
+
+    const { name, email, password, phone_number, role } = req.body;
+    const otp = Math.floor(1000 + Math.random() * 90000);
+
+    const existingUser = await Users.findOne({ email }).session(session);
     if (existingUser) {
-      return next(new HttpError(" User already exist", 400));
+      await session.abortTransaction();
+      session.endSession();
+      return next(new HttpError("User already exist", 400));
     }
 
     console.log("Creating new user>>");
     const user = new Users({ name, email, password, phone_number, role });
-    await user.save();
+    await user.save({ session });
 
     console.log("Saving OTP>>");
-    await Otp.create({ email, otp });
+    await Otp.create([{ email, otp }], { session });
 
     console.log(`your otp ${otp}`);
     await sendOtpEmail(email, user.name, otp);
 
-    console.log("otp send");
+    await session.commitTransaction();
+    session.endSession();
+
+    console.log("otp sent");
     res.status(201).json("otp sent.");
   } catch (err) {
+    await session.abortTransaction();
+    session.endSession();
     next(new HttpError("Signing up failed, try again", 500));
     console.log("err>>", err);
   }
