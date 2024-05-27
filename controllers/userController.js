@@ -43,7 +43,7 @@ export const signup = async (req, res, next) => {
     session.endSession();
 
     console.log("otp sent");
-    res.status(201).json("otp sent.");
+    res.status(201).json({ message: "otp sent." });
   } catch (err) {
     await session.abortTransaction();
     session.endSession();
@@ -62,17 +62,17 @@ export const verifyOTP = async (req, res, next) => {
     const otpRecord = await Otp.findOne({ email, otp });
 
     if (!user) {
-      return res.status(400).send("User not found");
+      return res.status(400).json({ message: "User not found" });
     }
     if (!otpRecord) {
-      return res.status(400).send("Invalid OTP");
+      return res.status(400).json({ message: "Invalid OTP" });
     }
 
     user.isVerified = true;
     await user.save();
-    res.status(200).send("OTP verified successfully");
+    res.status(200).json({ message: "OTP verified successfully" });
   } catch (err) {
-    res.status(500).send("Error verifying OTP");
+    res.status(500).json({ message: "Error verifying OTP" });
     console.error(">>err", err);
   }
 };
@@ -98,7 +98,7 @@ export const login = async (req, res, next) => {
       expiresIn: "1h",
     });
 
-    res.json({ token });
+    res.json({ users, token });
   } catch (err) {
     // res.status(500).json({ message: err.message });
     return next(new HttpError("Loggig up failed , try gain ", 500));
@@ -109,7 +109,7 @@ export const deleteUsers = async (req, res, next) => {
   const user = await Users.deleteMany({});
   const otp = await Otp.deleteMany({});
 
-  res.status(200).send("user deleted successfully");
+  res.status(200).json({ message: "user deleted successfully" });
 };
 
 export const getDoctors = async (req, res, next) => {
